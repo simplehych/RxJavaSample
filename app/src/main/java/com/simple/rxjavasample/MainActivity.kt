@@ -12,6 +12,11 @@ class MainActivity : AppCompatActivity() {
 
         // Example of a call to a native method
         sample_text.text = stringFromJNI()
+
+        sample_text.setOnClickListener {
+            var test = Test()
+            test.testZip()
+        }
     }
 
     /**
