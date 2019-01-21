@@ -56,11 +56,16 @@ dependencies {
     implementation 'io.reactivex:rxandroid:1.0.1'
 
     // retrofit 2.x
-    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.0.2'
 
     // RxBinding
     implementation 'com.jakewharton.rxbinding3:rxbinding:3.0.0-alpha2'
 
     // RxBus  https://blog.csdn.net/zhizhuodewo6/article/details/80131487
 
+    // glide
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
+
+//    implementation 'com.github.bumptech.glide:glide:4.4.0'
+//    annotationProcessor 'com.github.bumptech.glide:compiler:4.4.0'
 }

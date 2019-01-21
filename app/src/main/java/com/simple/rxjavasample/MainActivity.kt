@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
 
         sample_text.setOnClickListener {
             var test = Test()
-            test.testZip()
+            test.testDoOnNext()
         }
     }
 
