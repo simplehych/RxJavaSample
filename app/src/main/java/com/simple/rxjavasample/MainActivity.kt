@@ -15,7 +15,9 @@ class MainActivity : AppCompatActivity() {
 
         sample_text.setOnClickListener {
             var test = Test()
-            test.testDoOnNext()
+//            test.testDoOnNext()
+            var test1 = TestRxJava2()
+            test1.testBehaviorSubject()
         }
     }
 

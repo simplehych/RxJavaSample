@@ -140,6 +140,10 @@ public class TestRxJava1 {
         observable1.compose(new LiftTransform()).subscribe(subscriber1);
     }
 
+    public void testC() {
+
+    }
+
     class LiftTransform implements Observable.Transformer<Integer, String> {
 
         @Override
