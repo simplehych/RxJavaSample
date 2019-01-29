@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
             var test = Test()
 //            test.testDoOnNext()
             var test1 = TestRxJava2Operate()
-            test1.testEmptyNeverError()
+            test1.testThrottleWithTimeout()
         }
     }
 
