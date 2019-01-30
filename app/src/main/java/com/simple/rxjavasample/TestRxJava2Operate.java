@@ -2,6 +2,8 @@ package com.simple.rxjavasample;
 
 import android.util.Log;
 import io.reactivex.*;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
@@ -9,10 +11,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.observables.GroupedObservable;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -25,10 +24,22 @@ public class TestRxJava2Operate {
     private volatile String TAG = getClass().getSimpleName();
 
     public void testCreate() {
-        Observable.create(new ObservableOnSubscribe<Integer>() {
+        Observable<Integer> integerObservable = Observable.create(new ObservableOnSubscribe<Integer>() {
             @Override
             public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-
+                emitter.onNext(1);
+            }
+        });
+        integerObservable.subscribe(new Consumer<Integer>() {
+            @Override
+            public void accept(Integer integer) throws Exception {
+                Log.i(TAG, "testCreate first " + integer);
+            }
+        });
+        integerObservable.subscribe(new Consumer<Integer>() {
+            @Override
+            public void accept(Integer integer) throws Exception {
+                Log.i(TAG, "testCreate second " + integer);
             }
         });
     }
@@ -67,7 +78,7 @@ public class TestRxJava2Operate {
     }
 
     public void testEmptyNeverError() {
-        Observable.never()
+        Observable.empty()
                 .subscribe(new Observer<Object>() {
 
                     @Override
@@ -103,14 +114,23 @@ public class TestRxJava2Operate {
                 .cast(Integer.class);
     }
 
-    public void testFlatMapIterable() {
+    public void testFlatMap() {
         Observable.range(1, 5)
                 .flatMap(new Function<Integer, ObservableSource<String>>() {
                     @Override
                     public ObservableSource<String> apply(Integer integer) throws Exception {
-                        return null;
+                        return Observable.just(integer + "");
+                    }
+                })
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Exception {
+                        Log.i(TAG, "testFlatMap accept " + s);
                     }
                 });
+    }
+
+    public void testFlatMapIterable() {
 
         Observable.range(1, 5)
                 .flatMapIterable(new Function<Integer, Iterable<String>>() {
@@ -228,7 +248,7 @@ public class TestRxJava2Operate {
                         emitter.onNext(3);
                     }
                 })
-//                .onErrorReturnItem(666)
+                .onErrorReturnItem(666)
                 .subscribe(new Consumer<Integer>() {
                     @Override
                     public void accept(Integer integer) throws Exception {
@@ -353,4 +373,149 @@ public class TestRxJava2Operate {
                 });
     }
 
+    public void testToMap() {
+        Observable.range(8, 10)
+                .toMap(new Function<Integer, String>() {
+                    @Override
+                    public String apply(Integer integer) throws Exception {
+                        return Integer.toHexString(integer);
+                    }
+                })
+                .subscribe(new Consumer<Map<String, Integer>>() {
+                    @Override
+                    public void accept(Map<String, Integer> stringIntegerMap) throws Exception {
+                        Log.i(TAG, "testToMap " + stringIntegerMap);
+                    }
+                });
+
+        Observable.range(8, 10)
+                .toMultimap(new Function<Integer, String>() {
+                    @Override
+                    public String apply(Integer integer) throws Exception {
+                        return Integer.toHexString(integer);
+                    }
+                })
+                .subscribe(new Consumer<Map<String, Collection<Integer>>>() {
+                    @Override
+                    public void accept(Map<String, Collection<Integer>> stringCollectionMap) throws Exception {
+                        Log.i(TAG, "testToMultimap " + stringCollectionMap);
+                    }
+                });
+    }
+
+    public void testTo() {
+        String to = Observable.range(1, 5)
+                .to(new Function<Observable<Integer>, String>() {
+                    @Override
+                    public String apply(Observable<Integer> integerObservable) throws Exception {
+                        return "";
+                    }
+                });
+    }
+
+    public void testElement() {
+        Observable
+                .create(new ObservableOnSubscribe<Integer>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+                        emitter.onNext(1);
+//                        emitter.onError(new Throwable());
+                    }
+                })
+                .delay(1, TimeUnit.SECONDS)
+                .subscribe(new Observer<Object>() {
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        Log.i(TAG, "==================onSubscribe");
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+                        Log.i(TAG, "==================onNext");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "==================onError " + e);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.i(TAG, "==================onComplete");
+                    }
+                });
+    }
+
+    public void testMerge() {
+        Observable<String> observable1 = Observable.create(new ObservableOnSubscribe<String>() {
+            @Override
+            public void subscribe(ObservableEmitter<String> emitter) throws Exception {
+                emitter.onNext("observable11");
+                emitter.onError(new Throwable("observable1"));
+                emitter.onNext("observable12");
+
+            }
+        });
+        Observable<String> observable2 = Observable.create(new ObservableOnSubscribe<String>() {
+            @Override
+            public void subscribe(ObservableEmitter<String> emitter) throws Exception {
+                emitter.onNext("observable21");
+                emitter.onNext("observable22");
+                emitter.onError(new Throwable("observable2"));
+
+            }
+        });
+        Observable.mergeDelayError(observable1, observable2)
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        Log.i(TAG, "testMerge onSubscribe");
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        Log.i(TAG, "testMerge onNext " + s);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "testMerge onError " + e);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.i(TAG, "testMerge onComplete");
+                    }
+                });
+    }
+
+    public void testConcat() {
+        Observable<Integer> o1 = Observable.just(1, 2, 3).delay(5, TimeUnit.SECONDS);
+        Observable<Integer> o2 = Observable.just(11, 12, 13).delay(3, TimeUnit.SECONDS);
+        Observable<Integer> o3 = Observable.just(21, 22, 23);
+        Observer subscriber = new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.i(TAG, "testConcat onSubscribe");
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                Log.i(TAG, "testConcat onNext " + integer);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.i(TAG, "testConcat onError " + e);
+            }
+
+            @Override
+            public void onComplete() {
+                Log.i(TAG, "testConcat onComplete");
+            }
+        };
+
+        Observable.concatEager(Arrays.asList(o1, o2, o3)).subscribe(subscriber);
+    }
 }
